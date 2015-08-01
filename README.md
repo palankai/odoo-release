@@ -17,10 +17,14 @@ Put a release step like `001_ensure_admin_technical_features.py`
 
     #!/usr/bin/python
 
+    from odoo.addons.release.lib import odooenv
+
+
     def main():
-        Users = env["res.users"]
-        admin = Users.browse(1)
-        admin.write({"technical_features": True})
+        with odooenv() as env:
+            Users = env["res.users"]
+            admin = Users.browse(1)
+            admin.write({"technical_features": True})
 
     if __name__ == "__main__":
         main()
