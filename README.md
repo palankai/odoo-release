@@ -4,7 +4,7 @@ Odoo Release Manager
 With this module you would be able to create a initialised odoo database.
 You would be able to configure any exists odoo database.
 
-This odoo module populate a new shell command called `configure`.
+This odoo module populate a new shell command called `release`.
 
 Background
 ----------
