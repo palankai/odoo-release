@@ -7,7 +7,7 @@ import argparse
 from openerp.cli import Command
 from openerp.tools import config
 
-from .. import lib
+from .. import odootx
 
 
 class Release(Command):
@@ -16,7 +16,7 @@ class Release(Command):
     def run(self, args):
         parser = self.get_parser()
         options = parser.parse_args(args)
-        env = lib.connectdb(options.database)
+        env = odootx.connectdb(options.database)
         self.update_module_list(env)
         self.ensure_installed(env)
 
