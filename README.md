@@ -10,7 +10,7 @@ This odoo module populate a new cli command called `release`.
 Usage
 -----
 
-Put the `releases` folder path to odoo config like 
+Put the `releases` folder path to odoo config like
 `releases=/usr/src/releases/`. This folder should be a python package itself.
 
 Put a release step like `001_admin_config.py`
@@ -35,6 +35,42 @@ You can still use `./001_admin_config.py` (if the python package installed)
 **Important** calling the `release` is safe, never execute same script again
 but you can call and execute any migration step directly any time.
 
+Docker usage
+------------
+
+    docker run -d -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo --name odoo_db postgres
+    docker build -t myodoo .
+
+    docker run --rm --link odoo_db:db myodoo -- createdb
+    docker run --rm --link odoo_db:db myodoo -- release
+
+Recomended directory structure and config
+-----------------------------------------
+
+    \Dockerfile
+    \releases
+        __init__.py
+        0001_admin_config.py
+    \addons
+        release  # It should be just the addon itself
+    \deploy
+        openerp-sever.conf
+
+Server config:
+
+    [options]
+    addons_path = /usr/lib/python2.7/dist-packages/openerp/addons,/usr/src/addons
+    data_dir = /var/lib/odoo
+    db_name = myodoo
+    releases=/usr/src/releases
+
+Minimal Dockerfile:
+
+    FROM odoo:8
+    ADD /usr/src/deploy/openerp-server.conf /etc/odoo/openerp-server.conf
+    ADD . /usr/src/
+
+
 Installation
 ------------
 
@@ -52,7 +88,7 @@ Background
 ----------
 
 As an Odoo module developer it's very painful when (part of a team) I have to
-release to production server. There are lots of manual steps. Workaround 
+release to production server. There are lots of manual steps. Workaround
 is we've created a release note what we update before every release.
 This contains manual steps what we have to follow during the release.
 Even if it's tested (we usually try it before) still manual.
