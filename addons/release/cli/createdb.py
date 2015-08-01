@@ -5,7 +5,9 @@ import sys
 
 import argparse
 from openerp.cli import Command
+from openerp.service.db import DatabaseExists
 from openerp.service.db import exp_create_database
+from openerp.tools import config
 
 
 class CreateDB(Command):
@@ -13,15 +15,16 @@ class CreateDB(Command):
 
     def run(self, args):
         parser = self.get_parser()
-        if not args:
-            sys.exit(parser.print_help())
         options = parser.parse_args(args)
 
-        exp_create_database(
-            options.database, options.demo, options.lang, options.password
-        )
+        try:
+            exp_create_database(
+                options.database, options.demo, options.lang, options.password
+            )
+            print("Database %s created." % options.database)
+        except DatabaseExists:
+            print("Database %s alredy exists" % options.database)
 
-        print("Database %s created." % options.database)
 
     def get_parser(self):
         parser = argparse.ArgumentParser(
@@ -29,8 +32,8 @@ class CreateDB(Command):
             description=self.__doc__
         )
         parser.add_argument(
-            '-d', dest="database",
-            help="atabase name"
+            '-d', dest="database", default=config["db_name"],
+            help="database name (default=%s)" % config["db_name"]
         )
         parser.add_argument(
             "--password", dest="password", default="admin",
@@ -41,7 +44,7 @@ class CreateDB(Command):
             help="Language (default=en_US)"
         )
         parser.add_argument(
-            "--demo", dest="demo", action="store_true", default=False,
+            "--load-demo", dest="demo", action="store_true", default=False,
             help="Load demo database"
         )
         return parser

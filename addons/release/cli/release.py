@@ -5,6 +5,7 @@ import sys
 
 import argparse
 from openerp.cli import Command
+from openerp.tools import config
 
 from .. import lib
 
@@ -14,8 +15,6 @@ class Release(Command):
 
     def run(self, args):
         parser = self.get_parser()
-        if not args:
-            sys.exit(parser.print_help())
         options = parser.parse_args(args)
         env = lib.connectdb(options.database)
         self.update_module_list(env)
@@ -29,7 +28,8 @@ class Release(Command):
             description=self.__doc__
         )
         parser.add_argument(
-            "-d", dest="database", help="Database name"
+            '-d', dest="database", default=config["db_name"],
+            help="database name (default=%s)" % config["db_name"]
         )
         return parser
 
