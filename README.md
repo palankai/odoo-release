@@ -17,22 +17,20 @@ Put a release step like `001_admin_config.py`
 
     #!/usr/bin/python
 
-    from odootx import odootx
-
-
-    def main():
-        with odootx() as env:
-            Users = env["res.users"]
-            admin = Users.browse(1)
-            admin.write({"tz": "UTC"})
+    def main(env):
+        Users = env["res.users"]
+        admin = Users.browse(1)
+        admin.write({"tz": "UTC"})
 
     if __name__ == "__main__":
-        main()
+        from odootx import odootx
+        with odootx() as env:
+            main()
 
 Every steps will run only once against the same database.
 
 Then execute `odoo-server release`.
-You can still use `./001_admin_config.py`
+You can still use `./001_admin_config.py` (if the python package installed)
 
 **Important** calling the `release` is safe, never execute same script again
 but you can call and execute any migration step directly any time.
@@ -40,10 +38,14 @@ but you can call and execute any migration step directly any time.
 Installation
 ------------
 
-run `python setup.py install` to make sure odootx will be available.
-
 Make this addon available in Odoo. You don't have to install in odoo.
 First time when you execute the script it will install itself.
+
+### Execute step manually (optional)
+
+If you want execute step directly from shell, you have to install the
+python package part of this addon.
+run `python setup.py install` to make sure odootx will be available.
 
 
 Background
