@@ -13,18 +13,18 @@ Usage
 Put the `releases` folder path to odoo config like 
 `releases=/usr/src/releases/`. This folder should be a python package itself.
 
-Put a release step like `001_ensure_admin_technical_features.py`
+Put a release step like `001_admin_config.py`
 
     #!/usr/bin/python
 
-    from odoo.addons.release.lib import odooenv
+    from odootx import odootx
 
 
     def main():
-        with odooenv() as env:
+        with odootx() as env:
             Users = env["res.users"]
             admin = Users.browse(1)
-            admin.write({"technical_features": True})
+            admin.write({"tz": "UTC"})
 
     if __name__ == "__main__":
         main()
@@ -32,6 +32,10 @@ Put a release step like `001_ensure_admin_technical_features.py`
 Every steps will run only once against the same database.
 
 Then execute `odoo-server release`.
+You can still use `./001_admin_config.py`
+
+**Important** calling the `release` is safe, never execute same script again
+but you can call and execute any migration step directly any time.
 
 Installation
 ------------
