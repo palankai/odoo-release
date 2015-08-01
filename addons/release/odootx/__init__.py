@@ -24,3 +24,9 @@ def odootx(dbname=None, uid=1, context=None):
     except:
         env.cr.rollback()
         raise
+
+def install_addon(env, addon):
+    module = env["ir.module.module"].search([("name", "=", addon)])
+    if module.state != "installed":
+        module.button_immediate_install()
+    env.reset()
