@@ -47,10 +47,15 @@ Put the `releases` folder path to odoo config like
 
 Put a release step like `001_ensure_admin_technical_features.py`
 
-    def main(env):
+    #!/usr/bin/python
+
+    def main():
         Users = env["res.users"]
         admin = Users.browse(1)
         admin.write({"technical_features": True})
+
+    if __name__ == "__main__":
+        main()
 
 Every steps will run only once against the same database.
 
