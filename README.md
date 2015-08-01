@@ -40,7 +40,9 @@ but you can call and execute any migration step directly any time.
 Installation
 ------------
 
-Make this addon available in Odoo. You don't have to install (you could).
+run `python setup.py install` to make sure odootx will be available.
+
+Make this addon available in Odoo. You don't have to install in odoo.
 First time when you execute the script it will install itself.
 
 
