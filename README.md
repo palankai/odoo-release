@@ -41,7 +41,6 @@ Docker usage
     docker run -d -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo --name odoo_db postgres
     docker build -t myodoo .
 
-    docker run --rm --link odoo_db:db myodoo -- createdb
     docker run --rm --link odoo_db:db myodoo -- release
 
 Recomended directory structure and config

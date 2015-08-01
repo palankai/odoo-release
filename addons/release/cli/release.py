@@ -6,7 +6,9 @@ import os
 import sys
 
 import argparse
+import openerp
 from openerp.cli import Command
+from openerp.service import db, server
 from openerp.tools import config
 
 from .. import odootx
@@ -16,45 +18,43 @@ class Release(Command):
     """Release based on release steps"""
 
     def run(self, args):
-        parser = self.get_parser()
-        options = parser.parse_args(args)
-        env = odootx.connectdb(options.database)
-        self.update_module_list(env)
-        if self.ensure_installed(env):
-            env = odootx.connectdb(options.database)
-
-        applied = self.get_applied_steps(env)
-
-        print("Execute upgrade steps...")
+        openerp.tools.config.parse_config(args)
+        openerp.cli.server.report_configuration()
+        server.start(preload=[], stop=True)
+        self.ensure_database()
+        self.install_release_manager()
+        applied = self.get_applied_steps()
         path, steps = self.get_steps()
-        sys.path.append(path)
-        self.release_in_single_transaction(env, steps, exclude=applied)
+        if steps:
+            sys.path.append(path)
+            self.release(steps, exclude=applied)
 
     def get_parser(self):
         parser = argparse.ArgumentParser(
             prog="%s release" % sys.argv[0].split(os.path.sep)[-1],
             description=self.__doc__
         )
-        parser.add_argument(
-            '-d', dest="database", default=config["db_name"],
-            help="database name (default=%s)" % config["db_name"]
-        )
         return parser
 
-    def update_module_list(self, env):
-        env['ir.module.module'].update_list()
+    def ensure_database(self):
+        try:
+            db._create_empty_database(config["db_name"])
+        except db.DatabaseExists:
+            pass
 
-    def ensure_installed(self, env):
-        module = env["ir.module.module"].search([("name", "=", "release")])
-        if module.state != "installed":
-            module.button_immediate_install()
-            print("Release manager installed")
-            return True
-        return False
+    def install_release_manager(self):
+        with odootx.odootx() as env:
+            env['ir.module.module'].update_list()
+            module = env["ir.module.module"].search(
+                [("name", "=", "release")]
+            )
+            if module.state != "installed":
+                module.button_immediate_install()
 
-    def get_applied_steps(self, env):
-        Step = env["release.step"]
-        return [step.name for step in Step.search([])]
+    def get_applied_steps(self):
+        with odootx.odootx() as env:
+            Step = env["release.step"]
+            return [step.name for step in Step.search([])]
 
 
     def get_steps(self):
@@ -77,21 +77,18 @@ class Release(Command):
             sys.exit(1)
         return path
 
-    def release_in_single_transaction(self, env, steps, exclude):
+    def release(self, steps, exclude):
         for name in steps:
             if not name in exclude:
-                self.execute_step(env, name)
+                self.execute_step(name)
 
-    def execute_step(self, env, name):
+    def execute_step(self, name, store=True):
         mod = importlib.import_module(name)
         print("***** apply %s ******" % name)
-        try:
+        with odootx.odootx(config["db_name"]) as env:
             mod.main(env)
-            self.store_applied(env, name)
-            env.cr.commit()
-        except:
-            env.cr.rollback()
-            raise
+            if store:
+                self.store_applied(env, name)
 
     def store_applied(self, env, name):
         Step = env["release.step"]
